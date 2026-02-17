@@ -37,8 +37,23 @@ class Unit{
 		void guard();
 		void dodge(); 
 		bool isDead();
-		void equip(Equipment *);  
+		void equip(Equipment *);
+		  
 };
+
+
+Equipment::Equipment(int h, int a, int d){
+    hpmax = h;
+    atk = a;
+    def = d;
+}
+vector<int> Equipment::getStat(){
+    vector<int> stats;
+    stats.push_back(hpmax);
+    stats.push_back(atk);
+    stats.push_back(def);
+    return stats;
+}
 
 Unit::Unit(string t,string n){ 
 	type = t;
@@ -54,6 +69,7 @@ Unit::Unit(string t,string n){
 	}
 	hp = hpmax;	
 	guard_on = false;
+	dodge_on = false;
 	equipment = NULL;
 }
 
@@ -74,6 +90,7 @@ void Unit::showStatus(){
 
 void Unit::newTurn(){
 	guard_on = false; 
+	dodge_on = false;
 }
 
 int Unit::beAttacked(int oppatk){
@@ -81,6 +98,13 @@ int Unit::beAttacked(int oppatk){
 	if(oppatk > def){
 		dmg = oppatk-def;	
 		if(guard_on) dmg = dmg/3;
+		if(dodge_on){
+			int RNG =rand()%2+1;
+				if (RNG == 1)
+				{
+					dmg = 0;
+				}else{dmg = dmg*2;}
+		} 			
 	}	
 	hp -= dmg;
 	if(hp <= 0){hp = 0;}
@@ -90,6 +114,10 @@ int Unit::beAttacked(int oppatk){
 
 int Unit::attack(Unit &opp){
 	return opp.beAttacked(atk);
+}
+
+int Unit::ultimateAttack(Unit &target){
+	return target.beAttacked(atk*2);
 }
 
 int Unit::heal(){
@@ -103,10 +131,36 @@ void Unit::guard(){
 	guard_on = true;
 }	
 
+void Unit::dodge(){
+	dodge_on = true;
+}
+
 bool Unit::isDead(){
 	if(hp <= 0) return true;
 	else return false;
 }
+
+void Unit::equip(Equipment *new_equip){
+    if(equipment != NULL){
+        vector<int> old_stats = equipment->getStat();
+        hpmax -= old_stats[0];
+        atk -= old_stats[1];
+        def -= old_stats[2];
+    }	
+		if(new_equip != NULL){
+        vector<int> new_stats = new_equip->getStat();
+        hpmax += new_stats[0];
+        atk += new_stats[1];
+        def += new_stats[2];
+    }
+	equipment = new_equip;
+
+    if(hp > hpmax){
+        hp = hpmax;
+    }
+}	
+
+
 
 void drawScene(char p_action,int p,char m_action,int m){
 	cout << "                                                       \n";
